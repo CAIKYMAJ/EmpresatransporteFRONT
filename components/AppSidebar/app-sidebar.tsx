@@ -52,6 +52,51 @@ const data = {
       ],
     },
     {
+      title: "Cidade",
+      url: "#",
+      icon: Users,
+      items: [
+        {
+          title: "Cadastrar Cidade",
+          url: "/cadastrarCidade",
+        },
+        {
+          title: "Listar Cidade",
+          url: "/listarCidade",
+        },
+      ],
+    },
+    {
+      title: "Estado",
+      url: "#",
+      icon: Users,
+      items: [
+        {
+          title: "Cadastrar Estado",
+          url: "/cadastrarEstado",
+        },
+        {
+          title: "Listar Estado",
+          url: "/listarEstado",
+        },
+      ],
+    },
+    {
+      title: "Funcionario",
+      url: "#",
+      icon: Users,
+      items: [
+        {
+          title: "Cadastrar Funcionario",
+          url: "/cadastrarFuncionario",
+        },
+        {
+          title: "Listar Funcionario",
+          url: "/listarFuncionario",
+        },
+      ],
+    },
+    {
       title: "Fretes",
       url: "#",
       icon: Car,

@@ -16,40 +16,40 @@ import { Button } from "../ui/button";
 import { Pen, Trash2, TriangleAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 
-interface Frete {
+interface Funcionario {
   id: number;
-  numeroConhecimento: string;
-  quemPaga: string;
-  peso: number;
-  valor: number;
-  dataFrete: string;
-  origem: { nome: string };
-  destino: { nome: string };
-  remetente: { nome: string };
-  destinatario: { nome: string };
+  nome: string;
+  numeroRegistro: string;
 }
 
-const ListarFrete = () => {
-  const [fretes, setFretes] = useState<Frete[]>([]);
+const ListarFuncionarios = () => {
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [pesquisa, setPesquisa] = useState("");
 
-  // Busca lista de fretes
-  useEffect(() => {
-    fetch("http://localhost:8080/fretes/listar")
-      .then((res) => res.json())
+  // Busca dados da API
+  const buscarFuncionarios = () => {
+    fetch("http://localhost:8080/funcionarios/listar")
+      .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          setFretes(data);
+          setFuncionarios(data);
         } else {
-          console.error("Formato inesperado:", data);
+          console.error("Formato de dados inesperado: ", data);
         }
       })
-      .catch((err) => console.error("Erro ao buscar fretes:", err));
+      .catch((error) => console.error("Erro ao buscar funcionários:", error));
+  };
+
+  useEffect(() => {
+    buscarFuncionarios();
   }, []);
 
-  // Função para filtrar fretes pelo número de conhecimento
-  const fretesFiltrados = fretes.filter((frete) =>
-    frete.numeroConhecimento.toLowerCase().includes(pesquisa.toLowerCase())
+  const handlePesquisaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPesquisa(e.target.value);
+  };
+
+  const funcionariosFiltrados = funcionarios.filter((funcionario) =>
+    funcionario.nome.toLowerCase().includes(pesquisa.toLowerCase())
   );
 
   return (
@@ -62,23 +62,23 @@ const ListarFrete = () => {
               Início
             </BreadcrumbLink>
             <h1>|</h1>
-            <BreadcrumbLink href="/listarFrete" className="text-lg text-black">
-              Lista de Fretes
+            <BreadcrumbLink href="/listarFuncionarios" className="text-lg text-black">
+              Lista de Funcionários
             </BreadcrumbLink>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <h1 className="text-3xl mb-2 mt-3 flex items-center gap-5">Lista de Fretes</h1>
+      <h1 className="text-3xl mb-2 mt-3 flex items-center gap-5">Lista de Funcionários</h1>
       <Separator className="w-full" />
 
       {/* Pesquisa */}
       <div className="mb-4 mt-4">
         <Input
-          name="numeroConhecimento"
-          placeholder="Pesquisar pelo número do conhecimento"
+          name="pesquisa"
+          placeholder="Pesquisar Funcionários"
           className="w-96"
           value={pesquisa}
-          onChange={(e) => setPesquisa(e.target.value)}
+          onChange={handlePesquisaChange}
         />
       </div>
 
@@ -88,36 +88,22 @@ const ListarFrete = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Número Conhecimento</TableHead>
-                <TableHead>Quem Paga</TableHead>
-                <TableHead>Origem</TableHead>
-                <TableHead>Destino</TableHead>
-                <TableHead>Remetente</TableHead>
-                <TableHead>Destinatário</TableHead>
-                <TableHead>Peso</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Data Frete</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Número de Registro</TableHead>
                 <TableHead>Editar</TableHead>
                 <TableHead>Deletar</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {fretesFiltrados.map((frete) => (
-                <TableRow key={frete.id} className="hover:bg-gray-200">
-                  <TableCell>{frete.numeroConhecimento}</TableCell>
-                  <TableCell>{frete.quemPaga}</TableCell>
-                  <TableCell>{frete.origem.nome}</TableCell>
-                  <TableCell>{frete.destino.nome}</TableCell>
-                  <TableCell>{frete.remetente.nome}</TableCell>
-                  <TableCell>{frete.destinatario.nome}</TableCell>
-                  <TableCell>{frete.peso} kg</TableCell>
-                  <TableCell>R$ {frete.valor.toFixed(2)}</TableCell>
-                  <TableCell>{new Date(frete.dataFrete).toLocaleDateString()}</TableCell>
+              {funcionariosFiltrados.map((funcionario) => (
+                <TableRow key={funcionario.id} className="hover:bg-gray-200">
+                  <TableCell>{funcionario.nome}</TableCell>
+                  <TableCell>{funcionario.numeroRegistro}</TableCell>
                   <TableCell>
                     <Button
                       className="bg-blue-500 hover:bg-blue-300"
                       onClick={() =>
-                        (window.location.href = `/editarFrete?id=${frete.id}`)
+                        (window.location.href = `/cadastroFuncionario?id=${funcionario.id}`)
                       }
                     >
                       <Pen />
@@ -135,7 +121,7 @@ const ListarFrete = () => {
                         <div className="flex flex-col items-center p-4">
                           <TriangleAlert className="text-red-500 w-16 h-16 mb-4" />
                           <h2 className="text-center text-lg mb-1">
-                            Realmente deseja excluir este frete?
+                            Realmente deseja excluir este funcionário?
                           </h2>
                           <p className="text-center text-sm mb-8">
                             Essa ação não pode ser desfeita.
@@ -147,20 +133,15 @@ const ListarFrete = () => {
                             <Button
                               className="bg-red-500 hover:bg-red-300"
                               onClick={() => {
-                                fetch(`http://localhost:8080/fretes/excluir/${frete.id}`, {
-                                  method: "DELETE",
-                                })
+                                fetch(
+                                  `http://localhost:8080/funcionarios/excluir/${funcionario.id}`,
+                                  { method: "DELETE" }
+                                )
                                   .then((res) => {
-                                    if (res.ok) {
-                                      setFretes((prev) =>
-                                        prev.filter((item) => item.id !== frete.id)
-                                      );
-                                    } else {
-                                      console.error("Erro ao excluir frete");
-                                    }
+                                    if (res.ok) buscarFuncionarios();
                                   })
                                   .catch((err) =>
-                                    console.error("Erro na requisição:", err)
+                                    console.error("Erro ao excluir funcionário:", err)
                                   );
                               }}
                             >
@@ -181,4 +162,4 @@ const ListarFrete = () => {
   );
 };
 
-export default ListarFrete;
+export default ListarFuncionarios;

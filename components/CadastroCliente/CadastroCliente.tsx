@@ -1,142 +1,221 @@
-"use client"
+"use client";
 
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
-import React, { useState } from 'react'
-import { Separator } from "../ui/separator"
-import { Breadcrumb, BreadcrumbLink, BreadcrumbList } from "../ui/breadcrumb"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { Pen, PlusSquare, Trash2, TriangleAlert } from "lucide-react"
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog"
-import { Label } from "../ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useEffect, useState } from "react";
+import { Separator } from "../ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
+
 
 const CadastroCliente = () => {
-    const [formData, setFormData] = useState({
-        nome: "",
-        cpf: "",
-        endereco: "",
-        telefone: ""
-    });
+  const router = useRouter();
+  const param = useSearchParams()
+  const id = param.get("id"); // Pega o ID da URL para edição
+  const [tipoPessoa, setTipoPessoa] = useState("pf"); // Estado para Pessoa Física ou Jurídica
+  const [formData, setFormData] = useState({
+    codigoCli: "",
+    dataInscricao: "",
+    endereco: "",
+    telefone: "",
+    nome: "",
+    cpf: "",
+    cnpj: "",
+    razaoSocial: "",
+    inscricaoEstadual: "",
+    representante: "",
+  });
 
-    const formatarCPF = (value: string) => {
-        return value
-            .replace(/\D/g, '') // Irá remover o que não é número
-            .replace(/(\d{3})(\d)/, '$1.$2') // Irá adicionar o primeiro ponto
-            .replace(/(\d{3})(\d)/, '$1.$2') // Irá adicionar o segundo ponto
-            .replace(/(\d{3})(\d{1,2})$/, '$1-$2') // Irá adicionar o traço
-            .substring(0,14); // Irá limitar o tamanho do CPF
-    };
-
-    const formatarTelefone = (value: string) => {
-        return value
-            .replace(/\D/g, '') // Irá remover o que não é número
-            .replace(/(\d{2})(\d)/, '($1) $2') // Irá adicionar os parênteses no DDD
-            .replace(/(\d{4,5})(\d{4})$/, '$1-$2') // Irá adicionar o traço
-            .substring(0,15); // Irá limitar o tamanho do telefone
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-
-        const formattedValue = name === 'cpf'
-            ? formatarCPF(value) 
-            : name === 'telefone'
-            ? formatarTelefone(value)
-            : value;
-
-        setFormData(prev => ({ ...prev, [name]: formattedValue }))
+  useEffect(() => {
+    if (id) {
+      // Busca os dados do cliente para edição
+      const endpoint =
+        tipoPessoa === "pf"
+          ? `http://localhost:8080/clientes/listar/pessoa-fisica/${id}`
+          : `http://localhost:8080/clientes/listar/pessoa-juridica/${id}`;
+      fetch(endpoint)
+        .then((res) => res.json())
+        .then((data) => {
+          setFormData(data);
+          setTipoPessoa(data.cpf ? "pf" : "pj"); // Define o tipo com base nos dados retornados
+        })
+        .catch((err) => console.error("Erro ao buscar cliente:", err));
     }
+  }, [id, tipoPessoa]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        console.log("Dados enviados:", formData)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-        try {
-            const response = await fetch("http://localhost:8080/clientes/criar", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
-            })
-            console.log("Status da resposta:", response.status)
-            if (response.ok) {
-                console.log("Cliente cadastrado com sucesso!")
-                setFormData({ nome: "", cpf: "", endereco: "", telefone: ""})
-            } else {
-                console.error("Erro ao cadastrar cliente!")
-            }
-        } catch (error) {
-            console.error("Erro ao enviar dados: ", error)
-        }
+  const handleTipoPessoaChange = (value: string) => {
+    setTipoPessoa(value);
+    // Reseta campos irrelevantes ao alternar entre PF/PJ
+    setFormData((prev) => ({
+      ...prev,
+      cpf: "",
+      cnpj: "",
+      razaoSocial: "",
+      inscricaoEstadual: "",
+      representante: "",
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const isPessoaFisica = tipoPessoa === "pf";
+    const endpoint = id
+      ? isPessoaFisica
+        ? `http://localhost:8080/clientes/editar/pessoa-fisica/${id}`
+        : `http://localhost:8080/clientes/editar/pessoa-juridica/${id}`
+      : isPessoaFisica
+      ? `http://localhost:8080/clientes/criar/pessoa-fisica`
+      : `http://localhost:8080/clientes/criar/pessoa-juridica`;
+    const method = id ? "PUT" : "POST";
+
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        console.log(id ? "Cliente atualizado!" : "Cliente cadastrado!");
+        // router.push("/clientes");
+      } else {
+        console.error("Erro no envio:", response.status);
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
     }
+  };
+
   return (
-    <div className="p-5 ml-10 w-full">
-        {/* Caixa cinza de 'Catálogo' */}
-        <div className='w-full bg-gray-200 text-lg p-2 rounded-lg text-black'>
-            <Breadcrumb>
-                <BreadcrumbList>
-                    <BreadcrumbLink href="/" className='text-lg text-black'>Início</BreadcrumbLink>
-                    <h1>|</h1>
-                    <BreadcrumbLink href="/cadastrarCliente" className='text-lg text-black'>Cadastro de Clientes</BreadcrumbLink>
-                </BreadcrumbList>
-            </Breadcrumb>
+    <div className="p-5 w-full">
+      <h1 className="text-3xl mb-5">{id ? "Editar Cliente" : "Cadastrar Cliente"}</h1>
+      <Separator className="mb-5" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Select onValueChange={handleTipoPessoaChange} value={tipoPessoa}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione PF ou PJ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pf">Pessoa Física</SelectItem>
+            <SelectItem value="pj">Pessoa Jurídica</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Código do Cliente</Label>
+            <Input
+              name="codigoCli"
+              value={formData.codigoCli}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <Label>Data de Inscrição</Label>
+            <Input
+              name="dataInscricao"
+              type="date"
+              value={formData.dataInscricao}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <Label>Endereço</Label>
+            <Input
+              name="endereco"
+              value={formData.endereco}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <Label>Telefone</Label>
+            <Input
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {tipoPessoa === "pf" && (
+            <>
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <Label>CPF</Label>
+                <Input
+                  name="cpf"
+                  value={formData.cpf}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {tipoPessoa === "pj" && (
+            <>
+              <div>
+                <Label>Razão Social</Label>
+                <Input
+                  name="razaoSocial"
+                  value={formData.razaoSocial}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <Label>CNPJ</Label>
+                <Input
+                  name="cnpj"
+                  value={formData.cnpj}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Inscrição Estadual</Label>
+                <Input
+                  name="inscricaoEstadual"
+                  value={formData.inscricaoEstadual}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label>Representante (ID)</Label>
+                <Input
+                  name="representante"
+                  value={formData.representante}
+                  onChange={handleChange}
+                />
+              </div>
+            </>
+          )}
         </div>
-        <h1 className='text-3xl mb-2 mt-3 flex items-center gap-5'>Cadastrar Cliente</h1>
-        <Separator className="w-full"/>
 
-        <form onSubmit={handleSubmit} className="text-center px-4 mt-10">
-            <Select>
-                <SelectTrigger className="w-[180px] mb-5">
-                    <SelectValue placeholder="PF / PJ" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="light">Pessoa Física</SelectItem>
-                    <SelectItem value="dark">Pessoa Jurídica</SelectItem>
-                </SelectContent>
-            </Select>
-            <div className="flex gap-5 mb-10">
-                <div>
-                    <Label className="text-xs">Nome / Razão Social</Label>
-                    <Input name="nome" value={formData.nome} onChange={handleChange}/>
-                </div>
-
-                <div>
-                    <Label className="text-xs">CPF / CNPJ</Label>
-                    <Input name="cpf" value={formData.nome} type="number" onChange={handleChange}/>
-                </div>
-
-                <div>
-                    <Label className="text-xs">Data Inscrição</Label>
-                    <Input name="data" value={formData.nome} type="date" className="text-xs" onChange={handleChange}/>
-                </div>
-
-                <div>
-                    <Label className="text-xs">Endereço</Label>
-                    <Input name="endereco" value={formData.nome} onChange={handleChange}/>
-                </div>
-
-                <div>
-                    <Label className="text-xs">Telefone</Label>
-                    <Input name="telefone" value={formData.nome} type="tel" onChange={handleChange}/>
-                </div>
-
-                <div>
-                    <Label className="text-xs">Inscrição Estadual</Label>
-                    <Input name="inscEstadual" value={formData.nome} type="number" onChange={handleChange}/>
-                </div>
-            </div>
-            <Button type="submit" className="bg-blue-500 hover:bg-blue-300">Cadastrar</Button>
-        </form>
+        <Button type="submit" className="bg-blue-500">
+          {id ? "Salvar Alterações" : "Cadastrar"}
+        </Button>
+      </form>
     </div>
-  )
-}
+  );
+};
 
-export default CadastroCliente
+export default CadastroCliente;
