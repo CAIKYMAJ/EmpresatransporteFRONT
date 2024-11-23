@@ -22,7 +22,7 @@ const CadastrarEstado = () => {
   useEffect(() => {
     if (id) {
       // Busca os dados para edição
-      fetch(`http://localhost:8080/estados/${id}`)
+      fetch(`http://localhost:8080/estados/listar/${id}`)
         .then((response) => response.json())
         .then((data) => setFormData(data))
         .catch((error) => console.error("Erro ao buscar estado:", error));
@@ -50,13 +50,13 @@ const CadastrarEstado = () => {
       });
 
       if (response.ok) {
-        console.log(id ? "Estado atualizado com sucesso!" : "Estado cadastrado com sucesso!");
-        router.push("/estados"); // Redireciona para a listagem
+        alert(id ? "Estado atualizado com sucesso!" : "Estado cadastrado com sucesso!");
+        router.push("/listarEstado"); // Redireciona para a listagem
       } else {
-        console.error("Erro ao salvar o estado:", response.status);
+        alert("Esse Estado já existe!");
       }
     } catch (error) {
-      console.error("Erro na requisição:", error);
+      alert("Erro na requisição:");
     }
   };
 

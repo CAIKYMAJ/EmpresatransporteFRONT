@@ -49,13 +49,13 @@ const CadastrarFuncionario = () => {
       });
 
       if (response.ok) {
-        console.log(id ? "Funcionário atualizado!" : "Funcionário cadastrado!");
+        alert(id ? "Funcionário atualizado!" : "Funcionário cadastrado!");
         setFormData({ nome: "", numeroRegistro: "" });
       } else {
-        console.error("Erro no envio:", response.status);
+        alert("Esse registro já existe!");
       }
     } catch (err) {
-      console.error("Erro na requisição:", err);
+      alert("Erro na requisição:");
     }
   };
 

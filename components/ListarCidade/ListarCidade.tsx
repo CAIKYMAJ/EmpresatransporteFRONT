@@ -58,12 +58,12 @@ const ListarCidades = () => {
       .then((res) => {
         if (res.ok) {
           carregarCidades();
-          console.log("Cidade excluída com sucesso!");
+          alert("Cidade excluída com sucesso!");
         } else {
-          console.error("Erro ao excluir cidade:", res.status);
+          alert("Cidade está sendo utilizada!");
         }
       })
-      .catch((err) => console.error("Erro na exclusão:", err));
+      .catch((err) => alert("Cidade está sendo utilizada!"));
   };
 
   return (

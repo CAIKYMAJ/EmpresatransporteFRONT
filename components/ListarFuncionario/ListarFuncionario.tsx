@@ -40,6 +40,25 @@ const ListarFuncionarios = () => {
       .catch((error) => console.error("Erro ao buscar funcionários:", error));
   };
 
+  // excluir dados
+  const excluirFuncionario = (id: number) => {
+    fetch(`http://localhost:8080/funcionarios/deletar/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (res.ok) {
+          // Atualiza a lista após a exclusão
+          buscarFuncionarios();
+        } else {
+          alert("Erro ao excluir o funcionário. Tente novamente.");
+        }
+      })
+      .catch((err) => {
+        console.error("Erro ao excluir funcionário:", err);
+        alert("Erro ao excluir funcionário.");
+      });
+  };
+
   useEffect(() => {
     buscarFuncionarios();
   }, []);
@@ -103,7 +122,7 @@ const ListarFuncionarios = () => {
                     <Button
                       className="bg-blue-500 hover:bg-blue-300"
                       onClick={() =>
-                        (window.location.href = `/cadastroFuncionario?id=${funcionario.id}`)
+                        (window.location.href = `/cadastrarFuncionario?id=${funcionario.id}`)
                       }
                     >
                       <Pen />
@@ -112,7 +131,9 @@ const ListarFuncionarios = () => {
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button className="bg-red-500 hover:bg-red-300">
+                        <Button 
+                          className="bg-red-500 hover:bg-red-300"
+                          onClick={() => excluirFuncionario(funcionario.id)}>
                           <Trash2 />
                         </Button>
                       </DialogTrigger>
@@ -138,10 +159,13 @@ const ListarFuncionarios = () => {
                                   { method: "DELETE" }
                                 )
                                   .then((res) => {
-                                    if (res.ok) buscarFuncionarios();
+                                    if (res.ok){
+                                      buscarFuncionarios();
+                                      alert("Funcionário excluído com sucesso!")
+                                    } 
                                   })
                                   .catch((err) =>
-                                    console.error("Erro ao excluir funcionário:", err)
+                                    alert("Funcionário está sendo utilizado!")
                                   );
                               }}
                             >

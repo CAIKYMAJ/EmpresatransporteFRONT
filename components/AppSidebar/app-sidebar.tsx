@@ -2,12 +2,15 @@
 
 import * as React from "react"
 import {
+  Building,
   Car,
   Command,
   Frame,
+  Globe,
   Home,
   MessageCircle,
   Settings2,
+  User,
   Users,
 } from "lucide-react"
 
@@ -54,7 +57,7 @@ const data = {
     {
       title: "Cidade",
       url: "#",
-      icon: Users,
+      icon: Building,
       items: [
         {
           title: "Cadastrar Cidade",
@@ -69,7 +72,7 @@ const data = {
     {
       title: "Estado",
       url: "#",
-      icon: Users,
+      icon: Globe,
       items: [
         {
           title: "Cadastrar Estado",
@@ -84,7 +87,7 @@ const data = {
     {
       title: "Funcionario",
       url: "#",
-      icon: Users,
+      icon: User,
       items: [
         {
           title: "Cadastrar Funcionario",
@@ -111,17 +114,6 @@ const data = {
         },
       ],
     },
-    {
-      title: "Configurações",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "Minha Conta",
-          url: "#",
-        },
-      ],
-    },
   ]
 }
 
@@ -134,10 +126,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center">
-                  <img src="/logo.svg" alt="Logo" />
+                  <img src="/globe.svg" alt="Logo" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">WaiZap</span>
+                  <span className="truncate font-semibold">Globe</span>
                   <span className="truncate text-xs">Cooperativa</span>
                 </div>
               </a>

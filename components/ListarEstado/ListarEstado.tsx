@@ -61,11 +61,12 @@ const ListarEstados = () => {
       });
       if (response.ok) {
         buscarEstados(); // Atualiza a lista após exclusão
+        alert("Estado excluído com sucesso!")
       } else {
-        console.error("Erro ao excluir estado:", response.status);
+        alert("Estado está sendo utilizado!");
       }
     } catch (error) {
-      console.error("Erro ao excluir estado:", error);
+      alert("Estado está sendo utilizado!");
     }
   };
 

@@ -8,12 +8,17 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface Pessoa {
+  id: number;
+  nome: string;
+}
 
 const CadastroCliente = () => {
   const router = useRouter();
   const param = useSearchParams()
   const id = param.get("id"); // Pega o ID da URL para edição
   const [tipoPessoa, setTipoPessoa] = useState("pf"); // Estado para Pessoa Física ou Jurídica
+  const [representante, setRepresentante] = useState<Pessoa[]>([]);
   const [formData, setFormData] = useState({
     codigoCli: "",
     dataInscricao: "",
@@ -24,16 +29,22 @@ const CadastroCliente = () => {
     cnpj: "",
     razaoSocial: "",
     inscricaoEstadual: "",
-    representante: "",
+    representante: {id: 0},
   });
 
   useEffect(() => {
+
+    fetch("http://localhost:8080/clientes/listar/pessoa-fisica")
+    .then((res) => res.json())
+    .then((data) => setRepresentante(data))
+    .catch((err) => console.error("Erro ao buscar destinatários:", err));
+
     if (id) {
       // Busca os dados do cliente para edição
       const endpoint =
         tipoPessoa === "pf"
-          ? `http://localhost:8080/clientes/listar/pessoa-fisica/${id}`
-          : `http://localhost:8080/clientes/listar/pessoa-juridica/${id}`;
+          ? `http://localhost:8080/clientes/listar/${id}`
+          : `http://localhost:8080/clientes/listar/${id}`;
       fetch(endpoint)
         .then((res) => res.json())
         .then((data) => {
@@ -58,7 +69,7 @@ const CadastroCliente = () => {
       cnpj: "",
       razaoSocial: "",
       inscricaoEstadual: "",
-      representante: "",
+      representante: {id: 0},
     }));
   };
 
@@ -74,21 +85,45 @@ const CadastroCliente = () => {
       ? `http://localhost:8080/clientes/criar/pessoa-fisica`
       : `http://localhost:8080/clientes/criar/pessoa-juridica`;
     const method = id ? "PUT" : "POST";
+    let payload;
+    if (tipoPessoa === 'pf') {
+      payload = {
+        "codigoCli": formData.codigoCli,
+        "dataInscrisao": formData.dataInscricao,
+        "endereco": formData.endereco,
+        "telefone": formData.telefone,
+        "nome": formData.nome,
+        "cpf": formData.cpf
+      }
+    } else {
+      payload = {
+        codigoCli: formData.codigoCli,
+        dataInscrisao: formData.dataInscricao,
+        endereco: formData.endereco,
+        telefone: formData.telefone,
+        cnpj: formData.cnpj,
+        razaoSocial: formData.razaoSocial,
+        inscricaoEstadual: formData.inscricaoEstadual,
+        representante: {
+          id: formData.representante.id
+        }
+      }
+    }
 
     try {
       const response = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
-        console.log(id ? "Cliente atualizado!" : "Cliente cadastrado!");
+        alert(id ? "Cliente atualizado!" : "Cliente cadastrado!");
         // router.push("/clientes");
       } else {
-        console.error("Erro no envio:", response.status);
+        alert("Esse registro já existe!:");
       }
     } catch (err) {
-      console.error("Erro na requisição:", err);
+      alert("Erro na requisição:");
     }
   };
 
@@ -199,12 +234,19 @@ const CadastroCliente = () => {
                 />
               </div>
               <div>
-                <Label>Representante (ID)</Label>
-                <Input
-                  name="representante"
-                  value={formData.representante}
-                  onChange={handleChange}
-                />
+                <Label>Representante</Label>
+                <Select name="origem" value={String(formData.representante.id)} onValueChange={(value) => setFormData((prev) => ({ ...prev, representante: {id : Number(value)} }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a cidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {representante.map((representante) => (
+                      <SelectItem key={representante.id} value={representante.id.toString()}>
+                        {representante.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </>
           )}

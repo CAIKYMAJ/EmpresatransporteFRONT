@@ -87,7 +87,7 @@ const CadastroFrete = () => {
   // Busca dados do frete para edição
   useEffect(() => {
     if (freteId) {
-      fetch(`http://localhost:8080/fretes/${freteId}`)
+      fetch(`http://localhost:8080/fretes/listar/${freteId}`)
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -138,10 +138,10 @@ const CadastroFrete = () => {
       if (response.ok) {
         alert(freteId ? "Frete atualizado com sucesso!" : "Frete criado com sucesso!");
       } else {
-        console.error("Erro ao salvar o frete:", response.statusText);
+        alert("Frete já existe:");
       }
     } catch (err) {
-      console.error("Erro ao enviar os dados:", err);
+      alert("Erro ao enviar os dados:");
     }
   };
 

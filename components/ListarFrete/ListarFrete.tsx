@@ -117,7 +117,7 @@ const ListarFrete = () => {
                     <Button
                       className="bg-blue-500 hover:bg-blue-300"
                       onClick={() =>
-                        (window.location.href = `/editarFrete?id=${frete.id}`)
+                        (window.location.href = `/cadastrarFretes?id=${frete.id}`)
                       }
                     >
                       <Pen />
@@ -147,7 +147,7 @@ const ListarFrete = () => {
                             <Button
                               className="bg-red-500 hover:bg-red-300"
                               onClick={() => {
-                                fetch(`http://localhost:8080/fretes/excluir/${frete.id}`, {
+                                fetch(`http://localhost:8080/fretes/deletar/${frete.id}`, {
                                   method: "DELETE",
                                 })
                                   .then((res) => {
@@ -155,12 +155,13 @@ const ListarFrete = () => {
                                       setFretes((prev) =>
                                         prev.filter((item) => item.id !== frete.id)
                                       );
+                                      alert("Frete excluído com sucesso!")
                                     } else {
-                                      console.error("Erro ao excluir frete");
+                                      alert("Frete está sendo utilizado!");
                                     }
                                   })
                                   .catch((err) =>
-                                    console.error("Erro na requisição:", err)
+                                    alert("Erro na requisição:")
                                   );
                               }}
                             >

@@ -71,12 +71,12 @@ const CadastrarCidade = () => {
         }),
       });
       if (response.ok) {
-        console.log(id ? "Cidade atualizada!" : "Cidade cadastrada!");
+        alert(id ? "Cidade atualizada!" : "Cidade cadastrada!");
       } else {
-        console.error("Erro ao salvar cidade:", response.status);
+        alert("Essa cidade já existe!:");
       }
     } catch (err) {
-      console.error("Erro na requisição:", err);
+      alert("Erro na requisição:");
     }
   };
 

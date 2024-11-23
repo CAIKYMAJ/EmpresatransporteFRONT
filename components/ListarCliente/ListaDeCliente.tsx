@@ -136,7 +136,7 @@ const ListarCliente = () => {
                   <TableCell>
                     <Button
                       className="bg-blue-500 hover:bg-blue-300"
-                      onClick={() => (window.location.href = `/editarCliente?id=${cliente.id}`)}
+                      onClick={() => (window.location.href = `/cadastrarCliente?id=${cliente.id}`)}
                     >
                       <Pen />
                     </Button>
@@ -165,14 +165,17 @@ const ListarCliente = () => {
                               onClick={() => {
                                 fetch(
                                   tipo === "pf"
-                                    ? `/clientes/excluir/pessoa-fisica/${cliente.id}`
-                                    : `/clientes/excluir/pessoa-juridica/${cliente.id}`,
+                                    ? `/clientes/deletar/${cliente.id}`
+                                    : `/clientes/deletar/${cliente.id}`,
                                   { method: "DELETE" }
                                 )
                                   .then((res) => {
-                                    if (res.ok) buscarClientes();
+                                    if (res.ok) {
+                                      buscarClientes();
+                                      alert("Cliente excluído com sucesso!") 
+                                    }
                                   })
-                                  .catch((err) => console.error("Erro ao excluir cliente:", err));
+                                  .catch((err) => console.error("Cliente está sendo utilizado!", err));
                               }}
                             >
                               Confirmar
