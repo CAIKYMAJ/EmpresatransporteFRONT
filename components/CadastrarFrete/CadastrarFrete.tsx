@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from ".
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { useSearchParams } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface Cidade {
   id: number;
@@ -16,6 +17,7 @@ interface Cidade {
 interface Pessoa {
   id: number;
   nome: string;
+  razaoSocial: string;
 }
 
 interface Funcionario {
@@ -84,12 +86,24 @@ const CadastroFrete = () => {
       .catch((err) => console.error("Erro ao buscar funcionários:", err));
   }, []);
 
+  // Função para converter a data no formato desejado
+  const formatarData = (dataISO: string | null | undefined): string => {
+    if (!dataISO) return ""; // Retorna string vazia se não houver data
+    const dataObj = new Date(dataISO);
+    if (isNaN(dataObj.getTime())) return ""; // Verifica se a data é válida
+    const dia = String(dataObj.getDate()).padStart(2, "0");
+    const mes = String(dataObj.getMonth() + 1).padStart(2, "0"); // Meses começam do 0
+    const ano = dataObj.getFullYear();
+    return `${mes}-${dia}-${ano}`;
+  };
+
   // Busca dados do frete para edição
   useEffect(() => {
     if (freteId) {
       fetch(`http://localhost:8080/fretes/listar/${freteId}`)
         .then((res) => res.json())
         .then((data) => {
+
           setFormData({
             quemPaga: data.quemPaga || "",
             numeroConhecimento: data.numeroConhecimento || "",
@@ -97,7 +111,7 @@ const CadastroFrete = () => {
             valor: data.valor || 0,
             icms: data.icms || 0,
             pedagio: data.pedagio || 0,
-            dataFrete: data.dataFrete || "",
+            dataFrete: formatarData(data.dataFrete),
             origem: data.origem?.id || "",
             destino: data.destino?.id || "",
             remetente: data.remetente?.id || "",
@@ -123,11 +137,13 @@ const CadastroFrete = () => {
     const method = freteId ? "PUT" : "POST";
 
     try {
+      const dataFrete = formatarData(formData.dataFrete)
       const response = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          dataFrete,
           origem: { id: formData.origem },
           destino: { id: formData.destino },
           remetente: { id: formData.remetente },
@@ -166,12 +182,20 @@ const CadastroFrete = () => {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Peso</Label>
-            <Input name="peso" type="number" value={formData.peso} onChange={handleChange} />
-          </div>
-          <div>
-            <Label>Valor</Label>
-            <Input name="valor" type="number" value={formData.valor} onChange={handleChange} />
+            <Tabs defaultValue="account" className="w-[400px]">
+              <TabsList>
+                <TabsTrigger value="peso">Peso</TabsTrigger>
+                <TabsTrigger value="valor">Valor</TabsTrigger>
+              </TabsList>
+              <TabsContent value="peso">
+                <Label>Peso</Label>
+                <Input name="peso" type="number" value={formData.peso} onChange={handleChange} />
+              </TabsContent>
+              <TabsContent value="valor">
+                <Label>Valor</Label>
+                <Input name="valor" type="number" value={formData.valor} onChange={handleChange} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -239,7 +263,7 @@ const CadastroFrete = () => {
               <SelectContent>
                 {remetentes.map((remetente) => (
                   <SelectItem key={remetente.id} value={remetente.id.toString()}>
-                    {remetente.nome}
+                    {remetente.nome ?? remetente.razaoSocial}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -254,7 +278,7 @@ const CadastroFrete = () => {
               <SelectContent>
                 {destinatarios.map((destinatario) => (
                   <SelectItem key={destinatario.id} value={destinatario.id.toString()}>
-                    {destinatario.nome}
+                    {destinatario.nome ?? destinatario.razaoSocial}
                   </SelectItem>
                 ))}
               </SelectContent>

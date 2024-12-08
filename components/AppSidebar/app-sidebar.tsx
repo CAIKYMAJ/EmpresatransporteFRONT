@@ -112,6 +112,18 @@ const data = {
           title: "Listar Fretes",
           url: "/listarFrete",
         },
+        {
+          title: "Arrecadações",
+          url: "/listaArrecadacaoFrete",
+        },
+        {
+          title: "Medias",
+          url: "/listarMediaFrete",
+        },
+        {
+          title: "Fretes Cliente",
+          url: "/listarPJFrete",
+        },
       ],
     },
   ]
